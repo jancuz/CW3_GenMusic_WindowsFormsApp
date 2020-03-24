@@ -36,6 +36,15 @@
     <Reference Include="Melanchall.DryWetMidi, Version=5.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Melanchall.DryWetMidi.5.1.0\lib\net45\Melanchall.DryWetMidi.dll</HintPath>
     </Reference>
+    <Reference Include="MidiSharp, Version=0.9.6516.2348, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MidiSharp.0.9.6516.2348\lib\portable40-net40+sl5+win8+wp8+wpa81\MidiSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="NWaves, Version=0.9.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\NWaves.0.9.1\lib\netstandard2.0\NWaves.dll</HintPath>
+    </Reference>
+    <Reference Include="SimpleSynth, Version=0.3.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\SimpleSynth.0.3.0\lib\netstandard2.0\SimpleSynth.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
