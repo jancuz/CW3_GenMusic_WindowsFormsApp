@@ -9,7 +9,7 @@ for i in range(1, 21):
 header = header.split()
 
 file_to_w = "./Data/data.csv"
-file_from_r = "./startPopulation"
+file_from_r = "./curPopulationWAV"
 
 file = open(file_to_w, 'w')
 with file:
