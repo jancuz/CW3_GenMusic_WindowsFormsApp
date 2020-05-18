@@ -11,11 +11,13 @@ namespace CW3_GenMusic_WindowsFormsApp
         public string Name;
         public string Format;
         public string Directory;
-        public MusicFile(string n, string f, string d)
+        public int ClassNeuro;
+        public MusicFile(string n, string f, string d, int c = -1)
         {
             Name = n;
             Format = f;
             Directory = d;
+            ClassNeuro = c;
 
         }
         public override string ToString() { return Name; }

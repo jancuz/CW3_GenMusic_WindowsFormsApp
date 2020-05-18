@@ -2,6 +2,7 @@
 using Melanchall.DryWetMidi.Interaction;
 using System;
 using System.Collections.Generic;
+using System.Collections;
 using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
@@ -13,6 +14,9 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 
 using SimpleSynth.Synths;
+using Melanchall.DryWetMidi.Devices;
+using CsvHelper;
+using System.Globalization;
 
 namespace CW3_GenMusic_WindowsFormsApp
 {
@@ -21,9 +25,81 @@ namespace CW3_GenMusic_WindowsFormsApp
         public FormGenMusic()
         {
             InitializeComponent();
-        }
 
+            DeleteAllMIDI();
+            DeleteAllWAV();
+
+            // Заполнение жанров
+            genresMusic.Add("blues");
+            genresMusic.Add("classical");
+            genresMusic.Add("country");
+            genresMusic.Add("disco");
+            genresMusic.Add("hiphop");
+            genresMusic.Add("jazz");
+            genresMusic.Add("metal");
+            genresMusic.Add("pop");
+            genresMusic.Add("reaggae");
+            genresMusic.Add("rock");
+
+            foreach(var g in genresMusic)
+                clbMusicGenre.Items.Add(g);
+
+
+            // Заполняем таблицу
+            var columnName = new DataGridViewColumn();
+            columnName.HeaderText = "Название";
+            columnName.ReadOnly = true; 
+            columnName.Name = "name";
+            columnName.CellTemplate = new DataGridViewTextBoxCell();
+
+            DataGridViewButtonColumn columnPlayButton = new DataGridViewButtonColumn();
+            columnPlayButton.HeaderText = "Проигрыватель";
+            columnPlayButton.Name = "play";
+            columnPlayButton.Text = "play/stop";
+            columnPlayButton.UseColumnTextForButtonValue = true;
+
+            var columnClassComboBox = new DataGridViewComboBoxColumn();
+            DataTable data = new DataTable();
+            data.Columns.Add(new DataColumn("Value", typeof(string)));
+            data.Columns.Add(new DataColumn("Description", typeof(string)));
+
+            data.Rows.Add("-1", "NaM");
+            data.Rows.Add("0", "blues");
+            data.Rows.Add("1", "classical");
+            data.Rows.Add("2", "country");
+            data.Rows.Add("3", "disco");
+            data.Rows.Add("4", "hiphop");
+            data.Rows.Add("5", "jazz");
+            data.Rows.Add("6", "metal");
+            data.Rows.Add("7", "pop");
+            data.Rows.Add("8", "reaggae");
+            data.Rows.Add("9", "rock");
+
+            columnClassComboBox.DataSource = data;
+            columnClassComboBox.ValueMember = "Value";
+            columnClassComboBox.DisplayMember = "Description";
+            columnClassComboBox.HeaderText = "Класс";
+            columnClassComboBox.Name = "class";
+
+            dgvCurPopulation.Columns.Add(columnName);
+            dgvCurPopulation.Columns.Add(columnPlayButton);
+            dgvCurPopulation.Columns.Add(columnClassComboBox);
+
+            dgvCurPopulation.AllowUserToAddRows = false;
+
+
+        }
+        // список жанров
+        List<string> genresMusic = new List<string>();
+        // Стартовая популяция - текущие родители
+        public List<MusicFile> filesCurStartPopulation = new List<MusicFile>();
         public List<MusicFile> filesStartPopulation = new List<MusicFile>();
+        // Сгенерированная популяция - потомки
+        public List<MusicFile> filesCurPopulation = new List<MusicFile>();
+        // Результат
+        public List<MusicFile> filesResult = new List<MusicFile>();
+        public List<int> startClasses = new List<int>();
+        string pathToPython = @"C:\Users\Яна\AppData\Local\Programs\Python\Python36\python.exe";
 
         /// <summary>
         /// Добавление мелодии.
@@ -32,7 +108,7 @@ namespace CW3_GenMusic_WindowsFormsApp
         /// <param name="e"></param>
         private void bnAddMIDI_Click(object sender, EventArgs e)
         {
-            openFileDialog1.InitialDirectory = @"D:\3 курс\курсовая\CW3_GenMusic_WindowsFormsApp\CW3_GenMusic_WindowsFormsApp\bin\Debug\music";
+            openFileDialog1.InitialDirectory = @".\music";
             openFileDialog1.Filter = "MIDI|*.mid|MIDI|*.midi";
             if (openFileDialog1.ShowDialog() == DialogResult.Cancel)
                 return;
@@ -43,25 +119,49 @@ namespace CW3_GenMusic_WindowsFormsApp
 
             if (filesStartPopulation.Contains(new MusicFile(fileName, fileExt, fileDirectoryName)) == true)
                 MessageBox.Show("Данный файл уже добавлен!");
-
-            string fileNameWAV = null;
-            if (fileName.Contains(".mid"))
-                fileNameWAV = fileName.Replace(".mid", ".wav");
-            if (fileName.Contains(".midi"))
-                fileNameWAV = fileName.Replace(".mid", ".wav");
-            string fileDirectoryNameWAV = @".\convertedMusic\" + fileNameWAV;
-            if (System.IO.File.Exists(fileDirectoryNameWAV))
+            else
             {
+                // добавляем
                 MusicFile mf = new MusicFile(fileName, fileExt, fileDirectoryName);
                 lbStartPopulationMIDI.Items.Add(mf);
+                filesCurStartPopulation.Add(mf);
                 filesStartPopulation.Add(mf);
-
-                string fileExtWAV = ".wav";
-                mf = new MusicFile(fileNameWAV, fileExtWAV, fileDirectoryNameWAV);
-                lbStartPopulationWAV.Items.Add(mf);
+                // перемещаем в .\curPopulationMIDI
+                File.Copy(mf.Directory, @".\curPopulationMIDI\" + mf.Name);
             }
-            else
-                MessageBox.Show(@"Необходимо сначала конвертировать данный файл в формат .wav, сохранив исходное название, и поместить в следуюущую директорию: *\bin\Debug\convertedMusic");
+
+
+            // Вывод результата
+            for (int i = 0; i < filesCurStartPopulation.Count; i++)
+            {
+                int j = 0;
+                dgvCurPopulation.Rows.Add();
+                dgvCurPopulation.Rows[i].Cells[j++].Value = filesCurStartPopulation.ElementAt(i).Name;
+            }
+        }
+
+        /// <summary>
+        /// Конвертация MIDI в WAV
+        /// </summary>
+        /// <returns></returns>
+        private bool ConvertMIDI_WAV()
+        {
+            // Директория скрипта
+            string cmd_classify = @".\Scripts\ConverterWAV_MIDI.py";
+            ProcessStartInfo start_reading = new ProcessStartInfo();
+            start_reading.FileName = pathToPython;
+            start_reading.Arguments = string.Format("{0}", cmd_classify);
+            start_reading.UseShellExecute = false;
+            start_reading.RedirectStandardOutput = true;
+            start_reading.CreateNoWindow = true;
+            using (Process process = Process.Start(start_reading))
+            {
+                using (StreamReader reader = process.StandardOutput)
+                {
+                    string s = reader.ReadToEnd();
+                    return true;
+                }
+            }
         }
 
         /// <summary>
@@ -74,8 +174,13 @@ namespace CW3_GenMusic_WindowsFormsApp
             if (lbStartPopulationMIDI.SelectedItems.Count != 0)
             {
                 var sItem = lbStartPopulationMIDI.SelectedIndex;
+                if (File.Exists(@".\curPopulationMIDI\" + filesCurStartPopulation.ElementAt(sItem).Name))
+                {
+                    File.Delete(@".\curPopulationMIDI\" + filesCurStartPopulation.ElementAt(sItem).Name);
+                    filesCurStartPopulation.RemoveAt(sItem);
+                }
+                filesStartPopulation.RemoveAt(sItem);
                 lbStartPopulationMIDI.Items.RemoveAt(sItem);
-                lbStartPopulationWAV.Items.RemoveAt(sItem);
             }
         }
 
@@ -86,18 +191,32 @@ namespace CW3_GenMusic_WindowsFormsApp
         /// <param name="e"></param>
         private void bnGenMusic_Click(object sender, EventArgs e)
         {
+            // Формирование стартовой популяции
+            if(filesCurStartPopulation.Count() == 0)
+            {
+                foreach(var mf in filesStartPopulation)
+                {
+                    // перемещаем в .\curPopulationMIDI
+                    File.Copy(mf.Directory, @".\curPopulationMIDI\" + mf.Name);
+                    filesCurStartPopulation.Add(mf);
+                }
+            }
+
+            // конвертация файла и размещение в .\curPopulationWAV
+            ConvertMIDI_WAV();
+
             // Выбор начальной популяции
             // Извлечение данных из мелодий для последующей оценки нейросетью
             bool execute = false;
             do
             {
                 execute = ExtractDataFromMelodies();
-                foreach (var item in lbStartPopulationWAV.Items)
+                // Удаление оцененных мелодий WAV
+                foreach (var item in lbStartPopulationMIDI.Items)
                 {
                     var mf = item as MusicFile;
-                    string path1 = mf.Directory;
-                    string path2 = @".\startPopulation\";
-                    File.Delete(path2 + mf.Name);
+                    string path = @".\curPopulationWAV\";
+                    File.Delete(path + mf.Name.Replace(".mid", ".wav"));
                 }
             } while (!execute);
             MessageBox.Show("Данные извлечены");
@@ -110,15 +229,26 @@ namespace CW3_GenMusic_WindowsFormsApp
             } while (!classify);
             MessageBox.Show("Исходная популяция оценена");
 
-            // Извлечение оценок
+            // Запись в итоговую таблицу
+            //WriteResultData();
+
+            // Извлечение оценок (фитнесс)
             List<int> classes = ExtractClasses();
+            startClasses = new List<int>();
+            int i = 0;
+            for (int j = 0; j < filesCurPopulation.Count; j++)
+            {
+                filesCurPopulation.ElementAt(j).ClassNeuro = classes.ElementAt(i);
+                filesCurStartPopulation.ElementAt(j).ClassNeuro = classes.ElementAt(i++);
+                startClasses.Add(classes.ElementAt(i));
+            }
 
             // Формирование начальной популяции
             List<int> chords = new List<int>();
             List<int> notes = new List<int>();
             // Извлечение информации о первой популяции
             List<MidiFile> firstPopulation = new List<MidiFile>();
-            foreach (var melody in filesStartPopulation)
+            foreach (var melody in filesCurStartPopulation)
             {
                 var melodyMIDI = MidiFile.Read(melody.Directory);
                 firstPopulation.Add(melodyMIDI);
@@ -129,10 +259,18 @@ namespace CW3_GenMusic_WindowsFormsApp
             int sizeOfСhromosomeChords = chords.Min();
             int sizeOfСhromosomeNotes = notes.Min();
 
-            // Выполнение ГА
-            GA(firstPopulation, classes, sizeOfСhromosomeChords, sizeOfСhromosomeNotes);
-
-
+            int numberOfGeneratedPopulations = Convert.ToInt32(tBNumberOfIter.Text.ToString());
+            int sizeOfCreatedPopulation = Convert.ToInt32(tBSizeOfPopulation.Text.ToString());
+            int sizeOfSelection = Convert.ToInt32(tbSizeOfSelection.Text.ToString());
+            int numberOfMutations = Convert.ToInt32(tbNumbOfMutations.Text.ToString());
+            if (sizeOfSelection > sizeOfCreatedPopulation)
+                MessageBox.Show("Размер отбираемой популяции должен быть < чем Размер генерируемой популяции!");
+            else
+                if (numberOfMutations > sizeOfCreatedPopulation)
+                    MessageBox.Show("Кол-во мутаций должно быть <= чем Размер генерируемой популяции!");
+                else
+                    // Выполнение ГА
+                    GA(firstPopulation, classes, sizeOfСhromosomeChords, sizeOfСhromosomeNotes, numberOfGeneratedPopulations, sizeOfCreatedPopulation);
         }
 
         /// <summary>
@@ -146,43 +284,208 @@ namespace CW3_GenMusic_WindowsFormsApp
         /// <param name="sizeOfCreatedPopulation"></param>
         /// <param name="numberOfMutations"></param>
         private void GA(List<MidiFile> allPopulation, List<int> fitness, int sizeOfChromosomeChords, int sizeOfChromosomeNotes,
-            int numberOfGeneratedPopulations = 10, int sizeOfCreatedPopulation = 20, int sizeOfSelection = 10, int numberOfMutations = 2)
+            int numberOfGeneratedPopulations = 20, int sizeOfCreatedPopulation = 20, int sizeOfSelection = 10, int numberOfMutations = 2)
         {
-            for(int i = 0; i < 1; i++)
+            for(int i = 0; i < numberOfGeneratedPopulations; i++)
             {
                 List<MidiFile> curPopulation = new List<MidiFile>();
                 // Создание новой популяции
                 while(curPopulation.Count < sizeOfCreatedPopulation)
                 {
                     var parents = Parents(allPopulation);
+                    // Определение размера хромосомы
+                    List<int> chords = new List<int>();
+                    List<int> notes = new List<int>();
+                    foreach (var melody in parents)
+                    {
+                        chords.Add(melody.GetChords().Count());
+                        notes.Add(melody.GetNotes().Count());
+                    }
+
+                    sizeOfChromosomeChords = chords.Min();
+                    sizeOfChromosomeNotes = notes.Min();
+
                     var children = Crossing(sizeOfChromosomeChords, sizeOfChromosomeNotes, parents, i);
                     foreach(var m in children)
                         curPopulation.Add(m);
                 }
-                foreach (var p in allPopulation)
-                    curPopulation.Add(p);
 
                 // Мутация (изменение curPopulation)
                 Mutation(ref curPopulation, numberOfMutations, i);
 
                 // Селекция
-
+                allPopulation = Selection(curPopulation, sizeOfSelection, fitness, numberOfGeneratedPopulations, i);
             }
+
+            if (filesResult.Count == 0)
+                MessageBox.Show("Мелодии не были сгенерированны для данного жанра");
+
+            // Вывод результата
+            for(int i = 0; i < filesResult.Count; i++)
+            {
+                int j = 0;
+                dgvCurPopulation.Rows.Add();
+                dgvCurPopulation.Rows[i].Cells[j++].Value = filesResult.ElementAt(i).Name;
+            }
+
         }
 
-        private List<MidiFile> Selection(List<MidiFile> curPopulation, int sizeOfSelection)
+        private List<MidiFile> Selection(List<MidiFile> curPopulation, int sizeOfSelection, List<int> fitness, int numberOfGeneratedPopulations, int numCurPopulation)
         {
             List<MidiFile> selected = new List<MidiFile>();
 
+            // Удаление родительской популяции
+            foreach(var m in filesCurStartPopulation)
+                File.Delete(@".\curPopulationMIDI\" + m.Name);
+
             // Конвертация MIDI -> WAV
+            ConvertMIDI_WAV();
 
-            // Жанровая классификация
+            // Жанровая классификация (скрипт)
+            ExtractDataFromMelodies();
+            ClassifyMelodies();
+            List<int> classes = ExtractClasses();
+            int j = 0;
+            foreach (var cp in filesCurPopulation)
+                cp.ClassNeuro = classes.ElementAt(j++);
 
-            // Выбор 10-ти лучших мелодий
+            // Выбор sizeOfSelection-ти лучших мелодий
+            int count = 0;
+            List <MusicFile> selectedMusic = new List<MusicFile>(); // выбранные мелодии MIDI с директорией
+            List<int> posSelected = new List<int>(); // выбранные мелодии (индексы)
+            for(int i = 0; i < classes.Count; i++)
+            {
+                // проверка на совпадение с фитнесс-функцией
+                if(fitness.Contains(classes[i]))
+                {
+                    selectedMusic.Add(filesCurPopulation.ElementAt(i));
+                    posSelected.Add(i);
+                    count++;
+                }
+                if (count == sizeOfSelection)
+                    break;
+            }
 
+            // Последняя селекция (перемещение итоговой мелодии в папку .\result)
+            if (numberOfGeneratedPopulations == numCurPopulation+1)
+            {
+                ResultPopulation(selectedMusic);
+                // очищение текущей популяции
+                filesCurStartPopulation = new List<MusicFile>();
+                filesCurPopulation = new List<MusicFile>();
+                DeleteAllWAV();
+                DeleteAllMIDI();
+                // Формирование итоговой популяции
+                FormSelection(posSelected, curPopulation, ref selected);
+                return selected;
+            }
+
+            // Если сгенерированные мелодии не принадлежат изначальному заданному классу
+            if (count < sizeOfSelection)
+            {
+                for (int i = 0; i < classes.Count; i++)
+                {
+                    // добавление еще недобавленных мелодий
+                    if (!selectedMusic.Contains(filesCurPopulation.ElementAt(i)))
+                    {
+                        selectedMusic.Add(filesCurPopulation.ElementAt(i));
+                        posSelected.Add(i);
+                        count++;
+                    }
+                    if (count == sizeOfSelection)
+                        break;
+                }
+            }
+
+            // новые родители
+            NewParents(selectedMusic);
+
+            // Удаление всех файлов WAV, НЕ отобранных MIDI
+            DeleteAllWAV();
+            DeleteNotSelectedMIDI(selectedMusic);
+
+            // Формирование итоговой популяции
+            FormSelection(posSelected, curPopulation, ref selected);
             return selected;
         }
 
+        /// <summary>
+        /// Выбор новых родителей.
+        /// </summary>
+        /// <param name="selectedMusic"></param>
+        void NewParents(List<MusicFile> selectedMusic)
+        {
+            // новые родители
+            filesCurStartPopulation = new List<MusicFile>();
+            foreach (var f in selectedMusic)
+                filesCurStartPopulation.Add(f);
+            filesCurPopulation = new List<MusicFile>();
+        }
+
+        void FormSelection(List<int> posSelected, List<MidiFile> curPopulation, ref List<MidiFile> selected)
+        {
+            foreach (var p in posSelected)
+                selected.Add(curPopulation.ElementAt(p));
+        }
+
+        /// <summary>
+        /// Удаление НЕ отобранных MIDI
+        /// </summary>
+        /// <param name="selectedMusic"></param>
+        void DeleteNotSelectedMIDI(List<MusicFile> selectedMusic)
+        {
+            var dir = @".\curPopulationMIDI";
+            string[] files = Directory.GetFiles(dir);
+            foreach (var f in files)
+            {
+                var name = f.Substring(f.LastIndexOf(@"\") + 1);
+                if (!selectedMusic.Contains(new MusicFile(name, ".mid", f)))
+                    File.Delete(f);
+            }
+        }
+
+        /// <summary>
+        /// Удаление всех MIDI
+        /// </summary>
+        void DeleteAllMIDI()
+        {
+            var dir = @".\curPopulationMIDI";
+            var files = Directory.GetFiles(dir);
+            foreach (var f in files)
+                File.Delete(f);
+        }
+
+        /// <summary>
+        /// Удаление всех WAV
+        /// </summary>
+        void DeleteAllWAV()
+        {
+            var dir = @".\curPopulationWAV";
+            var files = Directory.GetFiles(dir);
+            foreach (var f in files)
+                File.Delete(f);
+        }
+
+        /// <summary>
+        /// Формирование результирующей популяции, записывание в .\result
+        /// </summary>
+        /// <param name="selectedMusic"></param>
+        void ResultPopulation(List<MusicFile> selectedMusic)
+        {
+            filesResult = new List<MusicFile>();
+            var dir = @".\curPopulationMIDI";
+            string[] files = Directory.GetFiles(dir);
+            foreach (var f in files)
+            {
+                var name = f.Substring(f.LastIndexOf(@"\") + 1);
+                var mf = new MusicFile(name, ".mid", f);
+                if (selectedMusic.Contains(mf))
+                {
+                    File.Copy(f, @".\result\" + name);
+                    filesResult.Add(mf);
+                }
+            }
+        }
 
         Random rnd;
         /// <summary>
@@ -261,7 +564,12 @@ namespace CW3_GenMusic_WindowsFormsApp
             }
 
             midiFile.Chunks.Add(trackChunk);
-            midiFile.Write(@"D:\3 курс\курсовая\CW3_GenMusic_WindowsFormsApp\CW3_GenMusic_WindowsFormsApp\bin\Debug\musicToConvert\music" + numberCurPopulaiton + "_" + DateTime.Now.ToString().Replace(':', ',').Replace(' ', '_') + "_" + rnd.Next() + ".mid");
+            string name = numberCurPopulaiton + "_" + DateTime.Now.ToString().Replace(':', ',').Replace(' ', '_') + "_" + rnd.Next() + ".mid";
+            string format = ".mid";
+            string directory = @".\curPopulationMIDI\" + name;
+            filesCurPopulation.Add(new MusicFile(name, format, directory));
+
+            midiFile.Write(directory);
             return midiFile;
         }
 
@@ -407,21 +715,24 @@ namespace CW3_GenMusic_WindowsFormsApp
             List<int> classes = new List<int>();
             for (int i = 1; i < musicData.Length; i++)
             {
-                var mas = musicData[i].Split(',');
-                classes.Add(Convert.ToInt32(mas.Last().Substring(0, mas.Last().IndexOf('.'))));
+                if (musicData[i] != "")
+                {
+                    var mas = musicData[i].Split(',');
+                    classes.Add(Convert.ToInt32(mas.Last().Substring(0, mas.Last().IndexOf('.'))));
+                }
             }
             return classes;
         }
 
         /// <summary>
-        /// Классификация мелодий с использованием нейросети.
+        /// Записывание оценок (итоговая таблица для расчета оценочных метрик).
         /// </summary>
-        private bool ClassifyMelodies()
+        private bool WriteResultData()
         {
             // Директория скрипта neuroClassifier.py
-            string cmd_classify = @".\Scripts\neuroClassifier.py";
+            string cmd_classify = @".\Scripts\writeResultData.py";
             ProcessStartInfo start_reading = new ProcessStartInfo();
-            start_reading.FileName = @"C:\Users\Яна\AppData\Local\Programs\Python\Python36\python.exe";
+            start_reading.FileName = pathToPython;
             start_reading.Arguments = string.Format("{0}", cmd_classify);
             start_reading.UseShellExecute = false;
             start_reading.RedirectStandardOutput = true;
@@ -437,24 +748,15 @@ namespace CW3_GenMusic_WindowsFormsApp
         }
 
         /// <summary>
-        /// Извлечение следующих характеристик из мелодий.wav с использованием скрипона на python:
-        /// filename,chroma_stft,spectral_centroid,spectral_bandwidth,rolloff,zero_crossing_rate,mfcc1, ...,mfcc20
+        /// Классификация мелодий с использованием нейросети.
         /// </summary>
-        /// <returns></returns>
-        private bool ExtractDataFromMelodies()
+        private bool ClassifyMelodies()
         {
-            foreach (var item in lbStartPopulationWAV.Items)
-            {
-                var mf = item as MusicFile;
-                string path1 = mf.Directory;
-                string path2 = @".\startPopulation\";
-                File.Copy(path1, path2 + mf.Name, true);
-            }
-            // Директория скрипта reader.py
-            string cmd_read = @".\Scripts\reader.py";
+            // Директория скрипта neuroClassifier.py
+            string cmd_classify = @".\Scripts\neuroClassifier.py";
             ProcessStartInfo start_reading = new ProcessStartInfo();
-            start_reading.FileName = @"C:\Python27\python.exe";
-            start_reading.Arguments = string.Format("{0}", cmd_read);  // give filename, dates from the UI to python and query datatype
+            start_reading.FileName = pathToPython;
+            start_reading.Arguments = string.Format("{0}", cmd_classify);
             start_reading.UseShellExecute = false;
             start_reading.RedirectStandardOutput = true;
             start_reading.CreateNoWindow = true;
@@ -466,6 +768,183 @@ namespace CW3_GenMusic_WindowsFormsApp
                     return true;
                 }
             }
+        }
+
+        /// <summary>
+        /// Извлечение следующих характеристик из мелодий.wav с использованием скрипта на на python:
+        /// filename,chroma_stft,spectral_centroid,spectral_bandwidth,rolloff,zero_crossing_rate,mfcc1, ...,mfcc20
+        /// </summary>
+        /// <returns></returns>
+        private bool ExtractDataFromMelodies()
+        {
+            // Директория скрипта reader.py
+            string cmd_read = @".\Scripts\reader.py";
+            ProcessStartInfo start_reading = new ProcessStartInfo();
+            start_reading.FileName = @"C:\Python27\python.exe";
+            start_reading.Arguments = string.Format("{0}", cmd_read);
+            start_reading.UseShellExecute = false;
+            start_reading.RedirectStandardOutput = true;
+            start_reading.CreateNoWindow = true;
+            using (Process process = Process.Start(start_reading))
+            {
+                using (StreamReader reader = process.StandardOutput)
+                {
+                    string s = reader.ReadToEnd();
+                    return true;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Выбор случайных мелодий определенного жанра
+        /// </summary>
+        /// <param name="genre"></param>
+        void RandomMelodiesForSelectedGenre(string genre)
+        {
+            // Очищение списков
+            lbStartPopulationMIDI.Items.Clear();
+            filesCurStartPopulation = new List<MusicFile>();
+            filesStartPopulation = new List<MusicFile>();
+            // Очищение папок
+            DeleteAllMIDI();
+            DeleteAllWAV();
+
+            string dir = @".\musicdb\" + genre;
+            DirectoryInfo df = new DirectoryInfo(dir);
+            var files = df.GetFiles();
+            rnd = new Random();
+            // размер начальной популяции
+            int numberOfMelodies = rnd.Next(2, files.Count());
+            // добавляемые мелодии
+            List<int> melodies = new List<int>();
+            melodies.Add(rnd.Next(0, files.Count()));
+            for(int i = 1; i < numberOfMelodies; i++)
+            {
+                int m = rnd.Next(0, files.Count());
+                while(melodies.Contains(m))
+                    m = rnd.Next(0, files.Count());
+                melodies.Add(m);
+            }
+            // Формируем начальную популяцию
+            foreach (var m in melodies)
+            {
+                var fileDirectoryName = files[m].FullName;
+                var fileName = fileDirectoryName.Substring(fileDirectoryName.LastIndexOf(@"\") + 1);
+                var fileExt = fileName.Substring(fileName.LastIndexOf("."));
+                MusicFile mf = new MusicFile(fileName, fileExt, fileDirectoryName);
+                lbStartPopulationMIDI.Items.Add(mf);
+                filesCurStartPopulation.Add(mf);
+                filesStartPopulation.Add(mf);
+                // перемещаем в .\curPopulationMIDI
+                File.Copy(mf.Directory, @".\curPopulationMIDI\" + mf.Name);
+            }
+        }
+
+        /// <summary>
+        /// Изменение жанра генерируемых мелодий
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void clbMusicGenre_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            var sItem = clbMusicGenre.SelectedIndex;
+            // жанр выбран
+            if (clbMusicGenre.CheckedIndices.Count != 0)
+            {
+                string genre = genresMusic.ElementAt(sItem);
+                RandomMelodiesForSelectedGenre(genre);
+            }
+            // жанр не выбран -> очищение списка
+            else
+            {
+                // Очищение списков
+                lbStartPopulationMIDI.Items.Clear();
+                filesCurStartPopulation = new List<MusicFile>();
+                filesStartPopulation = new List<MusicFile>();
+                // Очищение папок
+                DeleteAllMIDI();
+                DeleteAllWAV();
+            }
+        }
+
+        /// <summary>
+        /// Воспроизведение мелодии - не работает
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void dgvCurPopulation_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            // Игнорировать нажатие на другие ячейки.
+            if (e.RowIndex < 0 || e.ColumnIndex !=
+                dgvCurPopulation.Columns["play"].Index) return;
+
+            var musicToPlay = filesResult.ElementAt(Convert.ToInt32(e.RowIndex));
+            var mf = MidiFile.Read(musicToPlay.Directory).GetTimedEvents();
+
+            using (var outputDevice = OutputDevice.GetByName("Microsoft GS Wavetable Synth"))
+            using (var playback = new Playback(mf, TempoMap.Default, outputDevice))
+            {
+                playback.Start();
+            }
+        }
+
+        /// <summary>
+        /// Сохранение введенной пользовательской оценки и оценки ИНС - потестить
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void bnSaveMark_Click(object sender, EventArgs e)
+        {
+            // Запись в .csv файл dataResult
+            // указываем путь к файлу csv
+            string pathCsvFile = @".\Data\dataResult.csv";
+
+            // добавляем данные, которые будем записывать в csv файл
+            List<CSVMusicGenre> classes = new List<CSVMusicGenre>();
+            for(int i = 0; i < filesResult.Count; i++)
+            {
+                classes.Add(new CSVMusicGenre
+                {
+                    Name = filesResult.ElementAt(i).Name,
+                    ClassPredicted = filesResult.ElementAt(i).ClassNeuro,
+                    ClassUser = Convert.ToInt16(dgvCurPopulation.Rows[i].Cells[2].Value)
+                });
+            }
+
+            int c = 0;
+            foreach(var item in lbStartPopulationMIDI.Items)
+            {
+                var mf = item as MusicFile;
+                classes.Add(new CSVMusicGenre
+                {
+                    Name = mf.Name,
+                    ClassPredicted = startClasses.ElementAt(c++),
+                    ClassUser = clbMusicGenre.SelectedIndex
+                });
+            }
+
+            using (StreamWriter streamWriter = new StreamWriter(pathCsvFile))
+            {
+                using (CsvWriter csvWriter = new CsvWriter(streamWriter, CultureInfo.InvariantCulture))
+                {
+                    // указываем разделитель, который будет использоваться в файле
+                    csvWriter.Configuration.Delimiter = ",";
+                    // записываем данные в csv файл
+                    csvWriter.WriteRecords(classes);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Оценка работы модели
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void bnAnalyze_Click(object sender, EventArgs e)
+        {
+            // чтение файла dataResult.csv
+
+            // подсчет accuracy, precision
         }
     }
 }
