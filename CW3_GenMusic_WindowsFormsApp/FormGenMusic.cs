@@ -38,7 +38,7 @@ namespace CW3_GenMusic_WindowsFormsApp
             genresMusic.Add("jazz");
             genresMusic.Add("metal");
             genresMusic.Add("pop");
-            genresMusic.Add("reaggae");
+            genresMusic.Add("reggae");
             genresMusic.Add("rock");
 
             foreach(var g in genresMusic)
@@ -52,11 +52,11 @@ namespace CW3_GenMusic_WindowsFormsApp
             columnName.Name = "name";
             columnName.CellTemplate = new DataGridViewTextBoxCell();
 
-            DataGridViewButtonColumn columnPlayButton = new DataGridViewButtonColumn();
-            columnPlayButton.HeaderText = "Проигрыватель";
-            columnPlayButton.Name = "play";
-            columnPlayButton.Text = "play/stop";
-            columnPlayButton.UseColumnTextForButtonValue = true;
+            //DataGridViewButtonColumn columnPlayButton = new DataGridViewButtonColumn();
+            //columnPlayButton.HeaderText = "Проигрыватель";
+            //columnPlayButton.Name = "play";
+            //columnPlayButton.Text = "play/stop";
+            //columnPlayButton.UseColumnTextForButtonValue = true;
 
             var columnClassComboBox = new DataGridViewComboBoxColumn();
             DataTable data = new DataTable();
@@ -82,7 +82,7 @@ namespace CW3_GenMusic_WindowsFormsApp
             columnClassComboBox.Name = "class";
 
             dgvCurPopulation.Columns.Add(columnName);
-            dgvCurPopulation.Columns.Add(columnPlayButton);
+            //dgvCurPopulation.Columns.Add(columnPlayButton);
             dgvCurPopulation.Columns.Add(columnClassComboBox);
 
             dgvCurPopulation.AllowUserToAddRows = false;
@@ -942,9 +942,55 @@ namespace CW3_GenMusic_WindowsFormsApp
         /// <param name="e"></param>
         private void bnAnalyze_Click(object sender, EventArgs e)
         {
+            int TP = 0;
+            int FN = 0;
+            int FP = 0;
+            int TN = 0;
+            int count = 0;
             // чтение файла dataResult.csv
+            string pathCsvFile = @".\Data\dataResult.csv";
+            using (StreamReader streamWriter = new StreamReader(pathCsvFile))
+            {
+                using (CsvReader csvWriter = new CsvReader(streamWriter, CultureInfo.InvariantCulture))
+                {
+                    var records = csvWriter.GetRecords<CSVMusicGenre>().ToList();
+                    count = records.Count();
+                    foreach (var r in records)
+                    {
+                        var prediction = r.ClassPredicted;
+                        var user = r.ClassUser;
+                        if (prediction == user && prediction != -1)
+                            TP++;
+                        if (prediction != -1 && user == -1)
+                            FP++;
+                        if (prediction == -1 && user != -1)
+                            FN++;
+                        if (prediction == -1 && user == -1)
+                            TN++;
+                    }
+                }
+            }
+            if(count == 0)
+            {
+                MessageBox.Show("Результирующий файл пуст!");
+                return;
+            }
 
-            // подсчет accuracy, precision
+            // подсчет accuracy, precision, recall
+            var accuracy = (TP + TN) / count;
+            var precision = 0;
+            var recall = 0;
+            if (TP + FP != 0)
+                precision = TP / (TP + FP);
+            if (TP + FN != 0)
+                recall = TP / (TP + FN);
+
+            tbSizeOfSample.Text = "";
+            tbSizeOfSample.Text += count;
+            tbAccuracy.Text = "";
+            tbAccuracy.Text += accuracy;
+            tbPrecision.Text = "";
+            tbPrecision.Text += precision;
         }
     }
 }
