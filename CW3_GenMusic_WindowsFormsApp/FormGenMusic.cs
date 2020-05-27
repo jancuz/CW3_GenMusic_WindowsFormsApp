@@ -129,15 +129,6 @@ namespace CW3_GenMusic_WindowsFormsApp
                 // перемещаем в .\curPopulationMIDI
                 File.Copy(mf.Directory, @".\curPopulationMIDI\" + mf.Name);
             }
-
-
-            // Вывод результата
-            for (int i = 0; i < filesCurStartPopulation.Count; i++)
-            {
-                int j = 0;
-                dgvCurPopulation.Rows.Add();
-                dgvCurPopulation.Rows[i].Cells[j++].Value = filesCurStartPopulation.ElementAt(i).Name;
-            }
         }
 
         /// <summary>
@@ -236,11 +227,11 @@ namespace CW3_GenMusic_WindowsFormsApp
             List<int> classes = ExtractClasses();
             startClasses = new List<int>();
             int i = 0;
-            for (int j = 0; j < filesCurPopulation.Count; j++)
+            for (int j = 0; j < filesCurStartPopulation.Count; j++)
             {
-                filesCurPopulation.ElementAt(j).ClassNeuro = classes.ElementAt(i);
-                filesCurStartPopulation.ElementAt(j).ClassNeuro = classes.ElementAt(i++);
-                startClasses.Add(classes.ElementAt(i));
+                filesStartPopulation.ElementAt(j).ClassNeuro = classes.ElementAt(i);
+                filesCurStartPopulation.ElementAt(j).ClassNeuro = classes.ElementAt(i);
+                startClasses.Add(classes.ElementAt(i++));
             }
 
             // Формирование начальной популяции
@@ -347,7 +338,11 @@ namespace CW3_GenMusic_WindowsFormsApp
             List<int> classes = ExtractClasses();
             int j = 0;
             foreach (var cp in filesCurPopulation)
-                cp.ClassNeuro = classes.ElementAt(j++);
+            {
+                if(j < classes.Count())
+                    cp.ClassNeuro = classes.ElementAt(j);
+                j++;
+            }
 
             // Выбор sizeOfSelection-ти лучших мелодий
             int count = 0;
@@ -482,7 +477,7 @@ namespace CW3_GenMusic_WindowsFormsApp
                 if (selectedMusic.Contains(mf))
                 {
                     File.Copy(f, @".\result\" + name);
-                    filesResult.Add(mf);
+                    filesResult.Add(new MusicFile(name, ".mid", f, selectedMusic.ElementAt(selectedMusic.IndexOf(mf)).ClassNeuro));
                 }
             }
         }
@@ -564,9 +559,17 @@ namespace CW3_GenMusic_WindowsFormsApp
             }
 
             midiFile.Chunks.Add(trackChunk);
-            string name = numberCurPopulaiton + "_" + DateTime.Now.ToString().Replace(':', ',').Replace(' ', '_') + "_" + rnd.Next() + ".mid";
+            string name = numberCurPopulaiton + "_" + DateTime.Now.ToString().Replace(':', ',').Replace(' ', '_') + "_" + rnd.Next() + ((char)rnd.Next('A', 'Z' + 1)).ToString() + ".mid";
             string format = ".mid";
             string directory = @".\curPopulationMIDI\" + name;
+
+            // проверка на существование файла
+            while(File.Exists(directory))
+            {
+                name = numberCurPopulaiton + "_" + DateTime.Now.ToString().Replace(':', ',').Replace(' ', '_') + "_" + rnd.Next() + ((char)rnd.Next('A', 'Z' + 1)).ToString() + ".mid";
+                directory = @".\curPopulationMIDI\" + name;
+            }
+
             filesCurPopulation.Add(new MusicFile(name, format, directory));
 
             midiFile.Write(directory);
@@ -875,17 +878,17 @@ namespace CW3_GenMusic_WindowsFormsApp
         private void dgvCurPopulation_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             // Игнорировать нажатие на другие ячейки.
-            if (e.RowIndex < 0 || e.ColumnIndex !=
-                dgvCurPopulation.Columns["play"].Index) return;
+            //if (e.RowIndex < 0 || e.ColumnIndex !=
+                //dgvCurPopulation.Columns["play"].Index) return;
 
-            var musicToPlay = filesResult.ElementAt(Convert.ToInt32(e.RowIndex));
-            var mf = MidiFile.Read(musicToPlay.Directory).GetTimedEvents();
+            //var musicToPlay = filesResult.ElementAt(Convert.ToInt32(e.RowIndex));
+            //var mf = MidiFile.Read(musicToPlay.Directory).GetTimedEvents();
 
-            using (var outputDevice = OutputDevice.GetByName("Microsoft GS Wavetable Synth"))
-            using (var playback = new Playback(mf, TempoMap.Default, outputDevice))
-            {
-                playback.Start();
-            }
+            //using (var outputDevice = OutputDevice.GetByName("Microsoft GS Wavetable Synth"))
+            //using (var playback = new Playback(mf, TempoMap.Default, outputDevice))
+            //{
+                //playback.Start();
+            //}
         }
 
         /// <summary>
@@ -907,7 +910,7 @@ namespace CW3_GenMusic_WindowsFormsApp
                 {
                     Name = filesResult.ElementAt(i).Name,
                     ClassPredicted = filesResult.ElementAt(i).ClassNeuro,
-                    ClassUser = Convert.ToInt16(dgvCurPopulation.Rows[i].Cells[2].Value)
+                    ClassUser = Convert.ToInt16(dgvCurPopulation.Rows[i].Cells[1].Value)
                 });
             }
 
@@ -933,6 +936,8 @@ namespace CW3_GenMusic_WindowsFormsApp
                     csvWriter.WriteRecords(classes);
                 }
             }
+
+            MessageBox.Show("Оценка записана.");
         }
 
         /// <summary>
@@ -948,7 +953,7 @@ namespace CW3_GenMusic_WindowsFormsApp
             int TN = 0;
             int count = 0;
             // чтение файла dataResult.csv
-            string pathCsvFile = @".\Data\dataResult.csv";
+            string pathCsvFile = @".\Data\dataResultCalc.csv";
             using (StreamReader streamWriter = new StreamReader(pathCsvFile))
             {
                 using (CsvReader csvWriter = new CsvReader(streamWriter, CultureInfo.InvariantCulture))
