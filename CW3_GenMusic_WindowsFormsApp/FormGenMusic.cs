@@ -91,6 +91,7 @@ namespace CW3_GenMusic_WindowsFormsApp
         }
         // список жанров
         List<string> genresMusic = new List<string>();
+        //int selectedGenre = -2;
         // Стартовая популяция - текущие родители
         public List<MusicFile> filesCurStartPopulation = new List<MusicFile>();
         public List<MusicFile> filesStartPopulation = new List<MusicFile>();
@@ -314,9 +315,11 @@ namespace CW3_GenMusic_WindowsFormsApp
             // Вывод результата
             for(int i = 0; i < filesResult.Count; i++)
             {
-                int j = 0;
                 dgvCurPopulation.Rows.Add();
-                dgvCurPopulation.Rows[i].Cells[j++].Value = filesResult.ElementAt(i).Name;
+                dgvCurPopulation.Rows[i].Cells[0].Value = filesResult.ElementAt(i).Name;
+                // мелодия подходит по изначальному жанру -> выделяем цветом
+                if (startClasses.Contains(filesResult.ElementAt(i).ClassNeuro))
+                    dgvCurPopulation.Rows[i].Cells[0].Style.BackColor = Color.Green;
             }
 
         }
@@ -351,7 +354,7 @@ namespace CW3_GenMusic_WindowsFormsApp
             for(int i = 0; i < classes.Count; i++)
             {
                 // проверка на совпадение с фитнесс-функцией
-                if(fitness.Contains(classes[i]))
+                if(fitness.Contains(classes[i]) || (clbMusicGenre.SelectedIndex != -1 && fitness.Contains(clbMusicGenre.SelectedIndex)))
                 {
                     selectedMusic.Add(filesCurPopulation.ElementAt(i));
                     posSelected.Add(i);
@@ -364,6 +367,30 @@ namespace CW3_GenMusic_WindowsFormsApp
             // Последняя селекция (перемещение итоговой мелодии в папку .\result)
             if (numberOfGeneratedPopulations == numCurPopulation+1)
             {
+                //// Отбор результирующей популяции в соответствии с изначальными классами
+                //ResultPopulation(selectedMusic);
+                //// очищение текущей популяции
+                //filesCurStartPopulation = new List<MusicFile>();
+                //filesCurPopulation = new List<MusicFile>();
+                //DeleteAllWAV();
+                //DeleteAllMIDI();
+                //// Формирование итоговой популяции
+                //FormSelection(posSelected, curPopulation, ref selected);
+
+                // Выбор всех мелодий
+                for (int i = 0; i < classes.Count; i++)
+                {
+                    // добавление еще недобавленных мелодий
+                    if (!selectedMusic.Contains(filesCurPopulation.ElementAt(i)))
+                    {
+                        selectedMusic.Add(filesCurPopulation.ElementAt(i));
+                        posSelected.Add(i);
+                        count++;
+                    }
+                    if (count == sizeOfSelection)
+                        break;
+                }
+
                 ResultPopulation(selectedMusic);
                 // очищение текущей популяции
                 filesCurStartPopulation = new List<MusicFile>();
@@ -372,6 +399,7 @@ namespace CW3_GenMusic_WindowsFormsApp
                 DeleteAllMIDI();
                 // Формирование итоговой популяции
                 FormSelection(posSelected, curPopulation, ref selected);
+
                 return selected;
             }
 
@@ -480,6 +508,7 @@ namespace CW3_GenMusic_WindowsFormsApp
                     filesResult.Add(new MusicFile(name, ".mid", f, selectedMusic.ElementAt(selectedMusic.IndexOf(mf)).ClassNeuro));
                 }
             }
+
         }
 
         Random rnd;
@@ -996,6 +1025,11 @@ namespace CW3_GenMusic_WindowsFormsApp
             tbAccuracy.Text += accuracy;
             tbPrecision.Text = "";
             tbPrecision.Text += precision;
+        }
+
+        private void bnClear_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

@@ -30,7 +30,6 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormGenMusic));
             this.dgvCurPopulation = new System.Windows.Forms.DataGridView();
-            this.button2 = new System.Windows.Forms.Button();
             this.bnRemoveMIDI = new System.Windows.Forms.Button();
             this.bnAddMIDI = new System.Windows.Forms.Button();
             this.bnGenMusic = new System.Windows.Forms.Button();
@@ -68,18 +67,9 @@
             this.dgvCurPopulation.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvCurPopulation.Location = new System.Drawing.Point(6, 19);
             this.dgvCurPopulation.Name = "dgvCurPopulation";
-            this.dgvCurPopulation.Size = new System.Drawing.Size(353, 139);
+            this.dgvCurPopulation.Size = new System.Drawing.Size(427, 139);
             this.dgvCurPopulation.TabIndex = 20;
             this.dgvCurPopulation.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvCurPopulation_CellClick);
-            // 
-            // button2
-            // 
-            this.button2.Location = new System.Drawing.Point(70, 170);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(167, 23);
-            this.button2.TabIndex = 19;
-            this.button2.Text = "Очистить";
-            this.button2.UseVisualStyleBackColor = true;
             // 
             // bnRemoveMIDI
             // 
@@ -103,7 +93,7 @@
             // 
             // bnGenMusic
             // 
-            this.bnGenMusic.Location = new System.Drawing.Point(369, 19);
+            this.bnGenMusic.Location = new System.Drawing.Point(439, 19);
             this.bnGenMusic.Name = "bnGenMusic";
             this.bnGenMusic.Size = new System.Drawing.Size(105, 53);
             this.bnGenMusic.TabIndex = 14;
@@ -116,7 +106,7 @@
             this.lbStartPopulationMIDI.FormattingEnabled = true;
             this.lbStartPopulationMIDI.Location = new System.Drawing.Point(6, 19);
             this.lbStartPopulationMIDI.Name = "lbStartPopulationMIDI";
-            this.lbStartPopulationMIDI.Size = new System.Drawing.Size(231, 147);
+            this.lbStartPopulationMIDI.Size = new System.Drawing.Size(302, 147);
             this.lbStartPopulationMIDI.TabIndex = 12;
             // 
             // openFileDialog1
@@ -127,7 +117,7 @@
             // 
             this.clbMusicGenre.CheckOnClick = true;
             this.clbMusicGenre.FormattingEnabled = true;
-            this.clbMusicGenre.Location = new System.Drawing.Point(243, 19);
+            this.clbMusicGenre.Location = new System.Drawing.Point(314, 19);
             this.clbMusicGenre.MultiColumn = true;
             this.clbMusicGenre.Name = "clbMusicGenre";
             this.clbMusicGenre.Size = new System.Drawing.Size(234, 124);
@@ -147,11 +137,10 @@
             this.gbStartPopulation.Controls.Add(this.lbStartPopulationMIDI);
             this.gbStartPopulation.Controls.Add(this.clbMusicGenre);
             this.gbStartPopulation.Controls.Add(this.bnAddMIDI);
-            this.gbStartPopulation.Controls.Add(this.button2);
             this.gbStartPopulation.Controls.Add(this.bnRemoveMIDI);
             this.gbStartPopulation.Location = new System.Drawing.Point(12, 11);
             this.gbStartPopulation.Name = "gbStartPopulation";
-            this.gbStartPopulation.Size = new System.Drawing.Size(484, 259);
+            this.gbStartPopulation.Size = new System.Drawing.Size(554, 259);
             this.gbStartPopulation.TabIndex = 22;
             this.gbStartPopulation.TabStop = false;
             this.gbStartPopulation.Text = "Исходные данные:";
@@ -175,7 +164,7 @@
             // 
             // tbSizeOfSelection
             // 
-            this.tbSizeOfSelection.Location = new System.Drawing.Point(351, 206);
+            this.tbSizeOfSelection.Location = new System.Drawing.Point(424, 206);
             this.tbSizeOfSelection.Name = "tbSizeOfSelection";
             this.tbSizeOfSelection.Size = new System.Drawing.Size(123, 20);
             this.tbSizeOfSelection.TabIndex = 27;
@@ -184,7 +173,7 @@
             // lablSizeOfSelection
             // 
             this.lablSizeOfSelection.AutoSize = true;
-            this.lablSizeOfSelection.Location = new System.Drawing.Point(244, 204);
+            this.lablSizeOfSelection.Location = new System.Drawing.Point(317, 204);
             this.lablSizeOfSelection.Name = "lablSizeOfSelection";
             this.lablSizeOfSelection.Size = new System.Drawing.Size(71, 39);
             this.lablSizeOfSelection.TabIndex = 26;
@@ -209,7 +198,7 @@
             // 
             // tBSizeOfPopulation
             // 
-            this.tBSizeOfPopulation.Location = new System.Drawing.Point(351, 153);
+            this.tBSizeOfPopulation.Location = new System.Drawing.Point(424, 153);
             this.tBSizeOfPopulation.Name = "tBSizeOfPopulation";
             this.tBSizeOfPopulation.Size = new System.Drawing.Size(123, 20);
             this.tBSizeOfPopulation.TabIndex = 23;
@@ -218,7 +207,7 @@
             // lablSizePopulation
             // 
             this.lablSizePopulation.AutoSize = true;
-            this.lablSizePopulation.Location = new System.Drawing.Point(243, 153);
+            this.lablSizePopulation.Location = new System.Drawing.Point(316, 153);
             this.lablSizePopulation.Name = "lablSizePopulation";
             this.lablSizePopulation.Size = new System.Drawing.Size(82, 39);
             this.lablSizePopulation.TabIndex = 22;
@@ -238,7 +227,7 @@
             this.gBSelectedMelodies.Controls.Add(this.bnGenMusic);
             this.gBSelectedMelodies.Location = new System.Drawing.Point(12, 267);
             this.gBSelectedMelodies.Name = "gBSelectedMelodies";
-            this.gBSelectedMelodies.Size = new System.Drawing.Size(484, 217);
+            this.gBSelectedMelodies.Size = new System.Drawing.Size(554, 217);
             this.gBSelectedMelodies.TabIndex = 23;
             this.gBSelectedMelodies.TabStop = false;
             this.gBSelectedMelodies.Text = "Сгенерированные мелодии:";
@@ -306,7 +295,7 @@
             // 
             // bnSaveMark
             // 
-            this.bnSaveMark.Location = new System.Drawing.Point(369, 78);
+            this.bnSaveMark.Location = new System.Drawing.Point(439, 78);
             this.bnSaveMark.Name = "bnSaveMark";
             this.bnSaveMark.Size = new System.Drawing.Size(105, 50);
             this.bnSaveMark.TabIndex = 21;
@@ -319,7 +308,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("$this.BackgroundImage")));
-            this.ClientSize = new System.Drawing.Size(515, 492);
+            this.ClientSize = new System.Drawing.Size(578, 492);
             this.Controls.Add(this.gBSelectedMelodies);
             this.Controls.Add(this.gbStartPopulation);
             this.Name = "FormGenMusic";
@@ -336,7 +325,6 @@
         #endregion
 
         private System.Windows.Forms.DataGridView dgvCurPopulation;
-        private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Button bnRemoveMIDI;
         private System.Windows.Forms.Button bnAddMIDI;
         private System.Windows.Forms.Button bnGenMusic;
