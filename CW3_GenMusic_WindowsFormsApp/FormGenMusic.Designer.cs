@@ -32,7 +32,6 @@
             this.dgvCurPopulation = new System.Windows.Forms.DataGridView();
             this.bnRemoveMIDI = new System.Windows.Forms.Button();
             this.bnAddMIDI = new System.Windows.Forms.Button();
-            this.bnGenMusic = new System.Windows.Forms.Button();
             this.lbStartPopulationMIDI = new System.Windows.Forms.ListBox();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.clbMusicGenre = new System.Windows.Forms.CheckedListBox();
@@ -46,14 +45,8 @@
             this.tBSizeOfPopulation = new System.Windows.Forms.TextBox();
             this.lablSizePopulation = new System.Windows.Forms.Label();
             this.gBSelectedMelodies = new System.Windows.Forms.GroupBox();
-            this.tbAccuracy = new System.Windows.Forms.TextBox();
-            this.tbPrecision = new System.Windows.Forms.TextBox();
-            this.tbSizeOfSample = new System.Windows.Forms.TextBox();
-            this.lablSizeOfSample = new System.Windows.Forms.Label();
-            this.lablAccuracy = new System.Windows.Forms.Label();
-            this.lablPrecision = new System.Windows.Forms.Label();
-            this.bnAnalyze = new System.Windows.Forms.Button();
             this.bnSaveMark = new System.Windows.Forms.Button();
+            this.bnGenMusic = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dgvCurPopulation)).BeginInit();
             this.gbStartPopulation.SuspendLayout();
             this.gBSelectedMelodies.SuspendLayout();
@@ -67,7 +60,7 @@
             this.dgvCurPopulation.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvCurPopulation.Location = new System.Drawing.Point(6, 19);
             this.dgvCurPopulation.Name = "dgvCurPopulation";
-            this.dgvCurPopulation.Size = new System.Drawing.Size(427, 139);
+            this.dgvCurPopulation.Size = new System.Drawing.Size(427, 192);
             this.dgvCurPopulation.TabIndex = 20;
             this.dgvCurPopulation.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvCurPopulation_CellClick);
             // 
@@ -90,16 +83,6 @@
             this.bnAddMIDI.Text = "+";
             this.bnAddMIDI.UseVisualStyleBackColor = true;
             this.bnAddMIDI.Click += new System.EventHandler(this.bnAddMIDI_Click);
-            // 
-            // bnGenMusic
-            // 
-            this.bnGenMusic.Location = new System.Drawing.Point(439, 19);
-            this.bnGenMusic.Name = "bnGenMusic";
-            this.bnGenMusic.Size = new System.Drawing.Size(105, 53);
-            this.bnGenMusic.TabIndex = 14;
-            this.bnGenMusic.Text = "Сгенерировать мелодии";
-            this.bnGenMusic.UseVisualStyleBackColor = true;
-            this.bnGenMusic.Click += new System.EventHandler(this.bnGenMusic_Click);
             // 
             // lbStartPopulationMIDI
             // 
@@ -215,16 +198,9 @@
             // 
             // gBSelectedMelodies
             // 
-            this.gBSelectedMelodies.Controls.Add(this.tbAccuracy);
-            this.gBSelectedMelodies.Controls.Add(this.tbPrecision);
-            this.gBSelectedMelodies.Controls.Add(this.tbSizeOfSample);
-            this.gBSelectedMelodies.Controls.Add(this.lablSizeOfSample);
-            this.gBSelectedMelodies.Controls.Add(this.lablAccuracy);
-            this.gBSelectedMelodies.Controls.Add(this.lablPrecision);
-            this.gBSelectedMelodies.Controls.Add(this.bnAnalyze);
+            this.gBSelectedMelodies.Controls.Add(this.bnGenMusic);
             this.gBSelectedMelodies.Controls.Add(this.bnSaveMark);
             this.gBSelectedMelodies.Controls.Add(this.dgvCurPopulation);
-            this.gBSelectedMelodies.Controls.Add(this.bnGenMusic);
             this.gBSelectedMelodies.Location = new System.Drawing.Point(12, 267);
             this.gBSelectedMelodies.Name = "gBSelectedMelodies";
             this.gBSelectedMelodies.Size = new System.Drawing.Size(554, 217);
@@ -232,76 +208,25 @@
             this.gBSelectedMelodies.TabStop = false;
             this.gBSelectedMelodies.Text = "Сгенерированные мелодии:";
             // 
-            // tbAccuracy
-            // 
-            this.tbAccuracy.Location = new System.Drawing.Point(216, 190);
-            this.tbAccuracy.Name = "tbAccuracy";
-            this.tbAccuracy.ReadOnly = true;
-            this.tbAccuracy.Size = new System.Drawing.Size(143, 20);
-            this.tbAccuracy.TabIndex = 28;
-            // 
-            // tbPrecision
-            // 
-            this.tbPrecision.Location = new System.Drawing.Point(216, 166);
-            this.tbPrecision.Name = "tbPrecision";
-            this.tbPrecision.ReadOnly = true;
-            this.tbPrecision.Size = new System.Drawing.Size(143, 20);
-            this.tbPrecision.TabIndex = 27;
-            // 
-            // tbSizeOfSample
-            // 
-            this.tbSizeOfSample.Location = new System.Drawing.Point(108, 190);
-            this.tbSizeOfSample.Name = "tbSizeOfSample";
-            this.tbSizeOfSample.ReadOnly = true;
-            this.tbSizeOfSample.Size = new System.Drawing.Size(44, 20);
-            this.tbSizeOfSample.TabIndex = 26;
-            // 
-            // lablSizeOfSample
-            // 
-            this.lablSizeOfSample.AutoSize = true;
-            this.lablSizeOfSample.Location = new System.Drawing.Point(6, 193);
-            this.lablSizeOfSample.Name = "lablSizeOfSample";
-            this.lablSizeOfSample.Size = new System.Drawing.Size(96, 13);
-            this.lablSizeOfSample.TabIndex = 25;
-            this.lablSizeOfSample.Text = "Размер выборки:";
-            // 
-            // lablAccuracy
-            // 
-            this.lablAccuracy.AutoSize = true;
-            this.lablAccuracy.Location = new System.Drawing.Point(155, 193);
-            this.lablAccuracy.Name = "lablAccuracy";
-            this.lablAccuracy.Size = new System.Drawing.Size(55, 13);
-            this.lablAccuracy.TabIndex = 24;
-            this.lablAccuracy.Text = "Accuracy:";
-            // 
-            // lablPrecision
-            // 
-            this.lablPrecision.AutoSize = true;
-            this.lablPrecision.Location = new System.Drawing.Point(157, 169);
-            this.lablPrecision.Name = "lablPrecision";
-            this.lablPrecision.Size = new System.Drawing.Size(53, 13);
-            this.lablPrecision.TabIndex = 23;
-            this.lablPrecision.Text = "Precision:";
-            // 
-            // bnAnalyze
-            // 
-            this.bnAnalyze.Location = new System.Drawing.Point(6, 164);
-            this.bnAnalyze.Name = "bnAnalyze";
-            this.bnAnalyze.Size = new System.Drawing.Size(146, 23);
-            this.bnAnalyze.TabIndex = 22;
-            this.bnAnalyze.Text = "Оценка работы модели";
-            this.bnAnalyze.UseVisualStyleBackColor = true;
-            this.bnAnalyze.Click += new System.EventHandler(this.bnAnalyze_Click);
-            // 
             // bnSaveMark
             // 
-            this.bnSaveMark.Location = new System.Drawing.Point(439, 78);
+            this.bnSaveMark.Location = new System.Drawing.Point(439, 90);
             this.bnSaveMark.Name = "bnSaveMark";
             this.bnSaveMark.Size = new System.Drawing.Size(105, 50);
             this.bnSaveMark.TabIndex = 21;
             this.bnSaveMark.Text = "Сохранить оценку";
             this.bnSaveMark.UseVisualStyleBackColor = true;
             this.bnSaveMark.Click += new System.EventHandler(this.bnSaveMark_Click);
+            // 
+            // bnGenMusic
+            // 
+            this.bnGenMusic.Location = new System.Drawing.Point(439, 19);
+            this.bnGenMusic.Name = "bnGenMusic";
+            this.bnGenMusic.Size = new System.Drawing.Size(105, 65);
+            this.bnGenMusic.TabIndex = 22;
+            this.bnGenMusic.Text = "Сгенерировать мелодии";
+            this.bnGenMusic.UseVisualStyleBackColor = true;
+            this.bnGenMusic.Click += new System.EventHandler(this.bnGenMusic_Click);
             // 
             // FormGenMusic
             // 
@@ -317,7 +242,6 @@
             this.gbStartPopulation.ResumeLayout(false);
             this.gbStartPopulation.PerformLayout();
             this.gBSelectedMelodies.ResumeLayout(false);
-            this.gBSelectedMelodies.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -327,7 +251,6 @@
         private System.Windows.Forms.DataGridView dgvCurPopulation;
         private System.Windows.Forms.Button bnRemoveMIDI;
         private System.Windows.Forms.Button bnAddMIDI;
-        private System.Windows.Forms.Button bnGenMusic;
         private System.Windows.Forms.ListBox lbStartPopulationMIDI;
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
         private System.Windows.Forms.CheckedListBox clbMusicGenre;
@@ -337,18 +260,12 @@
         private System.Windows.Forms.TextBox tBSizeOfPopulation;
         private System.Windows.Forms.Label lablSizePopulation;
         private System.Windows.Forms.GroupBox gBSelectedMelodies;
-        private System.Windows.Forms.TextBox tbAccuracy;
-        private System.Windows.Forms.TextBox tbPrecision;
-        private System.Windows.Forms.TextBox tbSizeOfSample;
-        private System.Windows.Forms.Label lablSizeOfSample;
-        private System.Windows.Forms.Label lablAccuracy;
-        private System.Windows.Forms.Label lablPrecision;
-        private System.Windows.Forms.Button bnAnalyze;
         private System.Windows.Forms.Button bnSaveMark;
         private System.Windows.Forms.Label lablNumbOfMutations;
         private System.Windows.Forms.TextBox tbNumbOfMutations;
         private System.Windows.Forms.TextBox tbSizeOfSelection;
         private System.Windows.Forms.Label lablSizeOfSelection;
+        private System.Windows.Forms.Button bnGenMusic;
     }
 }
 

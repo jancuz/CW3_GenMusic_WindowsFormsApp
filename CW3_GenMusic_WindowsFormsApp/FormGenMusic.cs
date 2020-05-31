@@ -100,7 +100,8 @@ namespace CW3_GenMusic_WindowsFormsApp
         // Результат
         public List<MusicFile> filesResult = new List<MusicFile>();
         public List<int> startClasses = new List<int>();
-        string pathToPython = @"C:\Users\Яна\AppData\Local\Programs\Python\Python36\python.exe";
+        string pathToPython36 = @"C:\Users\Яна\AppData\Local\Programs\Python\Python36\python.exe";
+        string pathToPython27 = @"C:\Python27\python.exe";
 
         /// <summary>
         /// Добавление мелодии.
@@ -141,7 +142,7 @@ namespace CW3_GenMusic_WindowsFormsApp
             // Директория скрипта
             string cmd_classify = @".\Scripts\ConverterWAV_MIDI.py";
             ProcessStartInfo start_reading = new ProcessStartInfo();
-            start_reading.FileName = pathToPython;
+            start_reading.FileName = pathToPython36;
             start_reading.Arguments = string.Format("{0}", cmd_classify);
             start_reading.UseShellExecute = false;
             start_reading.RedirectStandardOutput = true;
@@ -764,7 +765,7 @@ namespace CW3_GenMusic_WindowsFormsApp
             // Директория скрипта neuroClassifier.py
             string cmd_classify = @".\Scripts\writeResultData.py";
             ProcessStartInfo start_reading = new ProcessStartInfo();
-            start_reading.FileName = pathToPython;
+            start_reading.FileName = pathToPython36;
             start_reading.Arguments = string.Format("{0}", cmd_classify);
             start_reading.UseShellExecute = false;
             start_reading.RedirectStandardOutput = true;
@@ -787,7 +788,7 @@ namespace CW3_GenMusic_WindowsFormsApp
             // Директория скрипта neuroClassifier.py
             string cmd_classify = @".\Scripts\neuroClassifier.py";
             ProcessStartInfo start_reading = new ProcessStartInfo();
-            start_reading.FileName = pathToPython;
+            start_reading.FileName = pathToPython36;
             start_reading.Arguments = string.Format("{0}", cmd_classify);
             start_reading.UseShellExecute = false;
             start_reading.RedirectStandardOutput = true;
@@ -812,7 +813,7 @@ namespace CW3_GenMusic_WindowsFormsApp
             // Директория скрипта reader.py
             string cmd_read = @".\Scripts\reader.py";
             ProcessStartInfo start_reading = new ProcessStartInfo();
-            start_reading.FileName = @"C:\Python27\python.exe";
+            start_reading.FileName = pathToPython27;
             start_reading.Arguments = string.Format("{0}", cmd_read);
             start_reading.UseShellExecute = false;
             start_reading.RedirectStandardOutput = true;
@@ -935,6 +936,11 @@ namespace CW3_GenMusic_WindowsFormsApp
             List<CSVMusicGenre> classes = new List<CSVMusicGenre>();
             for(int i = 0; i < filesResult.Count; i++)
             {
+                if (dgvCurPopulation.Rows[i].Cells[1].Value == null)
+                {
+                    MessageBox.Show("Пожалуйста, оцените все мелодии перед сохранением оуенки!");
+                    return;
+                }
                 classes.Add(new CSVMusicGenre
                 {
                     Name = filesResult.ElementAt(i).Name,
@@ -987,7 +993,7 @@ namespace CW3_GenMusic_WindowsFormsApp
             {
                 using (CsvReader csvWriter = new CsvReader(streamWriter, CultureInfo.InvariantCulture))
                 {
-                    var records = csvWriter.GetRecords<CSVMusicGenre>().ToList();
+                    var records = csvWriter.GetRecords<CSVMusicGenre>();
                     count = records.Count();
                     foreach (var r in records)
                     {
@@ -1019,17 +1025,12 @@ namespace CW3_GenMusic_WindowsFormsApp
             if (TP + FN != 0)
                 recall = TP / (TP + FN);
 
-            tbSizeOfSample.Text = "";
-            tbSizeOfSample.Text += count;
-            tbAccuracy.Text = "";
-            tbAccuracy.Text += accuracy;
-            tbPrecision.Text = "";
-            tbPrecision.Text += precision;
-        }
-
-        private void bnClear_Click(object sender, EventArgs e)
-        {
-
+            //tbSizeOfSample.Text = "";
+            //tbSizeOfSample.Text += count;
+            //tbAccuracy.Text = "";
+            //tbAccuracy.Text += accuracy;
+            //tbPrecision.Text = "";
+            //tbPrecision.Text += precision;
         }
     }
 }
